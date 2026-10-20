@@ -1,0 +1,23 @@
+DYNAMIC ROBOTICS 53 - GITHUB PAGES SETUP (GitHub Actions)
+
+WHY THE PAGE WAS BLANK
+GitHub Pages was set to "Deploy from a branch", so it ran Jekyll and published the
+SOURCE index.html (which points at /src/main.tsx). Browsers cannot run that, so you get a blank page.
+The site must be BUILT first. The workflow in this zip does that.
+
+ONE-TIME SETUP
+1. Extract this ZIP. Do NOT upload the .zip itself.
+2. Copy the CONTENTS of the extracted folder into your repo (tyadam4142-ai/dynamic-robotics-53),
+   replacing existing files. Make sure the hidden .github folder is included.
+   In your local clone also delete the old sales-command-centre/ and scripts/ folders, then commit and push to main.
+3. GitHub: Settings -> Pages -> Build and deployment -> Source = "GitHub Actions".
+4. Actions tab: wait for "Deploy Dynamic Robotics 53 to GitHub Pages" to turn green (about 1-2 minutes).
+   If it did not start, open it and press "Run workflow".
+5. Settings -> Pages: custom domain should read dynamicrobotics53.com (public/CNAME is copied in on every build).
+   Hard refresh the site (Ctrl/Cmd+Shift+R).
+
+JEKYLL
+The workflow publishes a .nojekyll file (also kept in public/) so GitHub never runs Jekyll on the built site.
+
+T53 ANDROID DOWNLOAD
+Buttons link to https://t53.dynamicrobotics53.com/download/ unless public/downloads/T53-Android.apk exists.
