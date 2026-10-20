@@ -9,31 +9,38 @@ import {
 } from 'lucide-react';
 
 const T53_DOWNLOAD_URL = 'https://t53.dynamicrobotics53.com/download/';
-// The APK lives in this repo at public/downloads/T53-Android.apk and is served from the same site.
-const APK_FILE = 'T53-Android.apk';
-const APK_URL = `${import.meta.env.BASE_URL}downloads/${APK_FILE}`;
+const APK_FILES = {
+  child: 'T53-Child.apk',
+  parent: 'T53-Parent.apk',
+} as const;
+const APK_URLS = {
+  child: `${import.meta.env.BASE_URL}downloads/${APK_FILES.child}`,
+  parent: `${import.meta.env.BASE_URL}downloads/${APK_FILES.parent}`,
+};
 
 export const T53Section: React.FC = () => {
-  // True only when the APK file really exists on the site, so the button never leads to a 404.
-  const [apkReady, setApkReady] = useState(false);
+  const [apkReady, setApkReady] = useState({child: true, parent: true});
 
   useEffect(() => {
     let cancelled = false;
-    fetch(APK_URL, {method: 'HEAD', cache: 'no-store'})
-      .then((res) => {
-        const type = res.headers.get('content-type') || '';
-        if (!cancelled) setApkReady(res.ok && !type.includes('text/html'));
-      })
-      .catch(() => {
-        if (!cancelled) setApkReady(false);
-      });
+    const checkApk = (url: string) =>
+      fetch(url, {method: 'HEAD', cache: 'no-store'})
+        .then((res) => res.ok && !(res.headers.get('content-type') || '').includes('text/html'))
+        .catch(() => false);
+
+    Promise.all([checkApk(APK_URLS.child), checkApk(APK_URLS.parent)]).then(([child, parent]) => {
+      if (!cancelled) setApkReady({child, parent});
+    });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const androidLink = apkReady
-    ? {href: APK_URL, download: APK_FILE}
+  const childAndroidLink = apkReady.child
+    ? {href: APK_URLS.child, download: APK_FILES.child}
+    : {href: T53_DOWNLOAD_URL, target: '_blank', rel: 'noopener noreferrer'};
+  const parentAndroidLink = apkReady.parent
+    ? {href: APK_URLS.parent, download: APK_FILES.parent}
     : {href: T53_DOWNLOAD_URL, target: '_blank', rel: 'noopener noreferrer'};
 
   return (
@@ -105,12 +112,20 @@ export const T53Section: React.FC = () => {
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <a
-                {...androidLink}
+                {...childAndroidLink}
                 className="btn-shimmer inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#c99a2e] to-[#f1ca62] text-black font-bold text-xs uppercase tracking-wider shadow-[0_0_28px_rgba(201,154,46,0.3)] hover:shadow-[0_0_40px_rgba(241,202,98,0.45)] hover:scale-[1.02] transition-all"
               >
                 <Download className="w-4 h-4" />
-                {apkReady ? 'Download APK for Android' : 'Download for Android'}
-                {apkReady ? null : <ArrowUpRight className="w-3.5 h-3.5" />}
+                Download Child App
+                {apkReady.child ? null : <ArrowUpRight className="w-3.5 h-3.5" />}
+              </a>
+              <a
+                {...parentAndroidLink}
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#f1ca62]/40 text-zinc-200 font-semibold text-xs uppercase tracking-wider transition-all"
+              >
+                <Download className="w-4 h-4" />
+                Download Parent App
+                {apkReady.parent ? null : <ArrowUpRight className="w-3.5 h-3.5" />}
               </a>
               <a
                 href="https://t53.dynamicrobotics53.com/"
@@ -138,25 +153,42 @@ export const T53Section: React.FC = () => {
                 </div>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/25 text-[10px] font-mono text-emerald-300 uppercase tracking-wider">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
-                  Android ready
+                  Android downloads
                 </span>
               </div>
 
               <div className="mt-6 space-y-3">
                 <div className="t53-platform-card t53-platform-active">
                   <div className="flex items-center gap-3">
-                    <div className="t53-platform-icon">A</div>
+                    <div className="t53-platform-icon">C</div>
                     <div className="min-w-0">
-                      <div className="text-sm font-bold text-white">Android</div>
-                      <div className="text-[11px] text-zinc-400">Android APK · direct download</div>
+                      <div className="text-sm font-bold text-white">T53 Child</div>
+                      <div className="text-[11px] text-zinc-400">Child Android app · direct download</div>
                     </div>
                   </div>
                   <a
-                    {...androidLink}
+                    {...childAndroidLink}
                     className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#f1ca62] text-black text-[10px] font-bold uppercase tracking-wider hover:bg-white transition-colors"
                   >
-                    Get T53
-                    {apkReady ? <Download className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
+                    Get Child App
+                    {apkReady.child ? <Download className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
+                  </a>
+                </div>
+
+                <div className="t53-platform-card t53-platform-active">
+                  <div className="flex items-center gap-3">
+                    <div className="t53-platform-icon">P</div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-bold text-white">T53 Parent</div>
+                      <div className="text-[11px] text-zinc-400">Parent Android app · direct download</div>
+                    </div>
+                  </div>
+                  <a
+                    {...parentAndroidLink}
+                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#f1ca62] text-black text-[10px] font-bold uppercase tracking-wider hover:bg-white transition-colors"
+                  >
+                    Get Parent App
+                    {apkReady.parent ? <Download className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
                   </a>
                 </div>
 
@@ -188,6 +220,10 @@ export const T53Section: React.FC = () => {
               <div className="mt-4 rounded-xl border border-[#f1ca62]/15 bg-[#f1ca62]/5 px-3.5 py-3 text-[11px] leading-relaxed text-zinc-400">
                 T53 is designed to keep the experience focused: no hidden microphone, camera recording, or private-message scraping.
               </div>
+
+              <p className="mt-3 text-[11px] leading-relaxed text-zinc-500">
+                The supplied Android packages are unsigned. Android may block installation; installable releases must be signed by the publisher.
+              </p>
             </div>
           </div>
         </div>
